@@ -14,7 +14,6 @@ import net.bytebuddy.matcher.ElementMatchers;
 public class Agent {
 
     public static final Logger LOGGER = Logger.getAnonymousLogger();
-    private static final String PATH = "com.example";
     private static final Map<String, String> methodSet = new ConcurrentHashMap<>();
 
     public static void removeMethod(String method) {
@@ -28,9 +27,9 @@ public class Agent {
         }
     }
 
-    static {
+    private static void initLog(String filePath){
         try {
-            FileHandler fileHandler = new FileHandler("/tmp/coverage.log");
+            FileHandler fileHandler = new FileHandler(filePath);
             fileHandler.setFormatter(new MyCustomFormatter());
 
             LOGGER.addHandler(fileHandler);
@@ -43,9 +42,14 @@ public class Agent {
     public static void premain(String arguments, Instrumentation instrumentation) {
         System.out.println("Agent is running");
 
+        System.out.println(arguments);
+
+        String[] argsArray = arguments.split(";");
+        initLog(argsArray[0]);
+
         new AgentBuilder.Default()
                 .with(new AgentBuilder.InitializationStrategy.SelfInjection.Eager())
-                .type(ElementMatchers.nameStartsWith(PATH))
+                .type(ElementMatchers.nameStartsWith(argsArray[1]))
                 .transform((builder, typeDescription, classLoader, javaModule, protectionDomain) -> {
                     typeDescription.getDeclaredMethods()
                             .forEach(method -> {
