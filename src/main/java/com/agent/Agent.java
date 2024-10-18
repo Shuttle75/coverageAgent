@@ -3,17 +3,23 @@ package com.agent;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.*;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.matcher.ElementMatchers;
 
-
 public class Agent {
 
     public static final Logger LOGGER = Logger.getAnonymousLogger();
     private static final String PATH = "com.example";
+    private static final Map<String, String> methodSet = new ConcurrentHashMap<>();
+
+    public static void removeMethod(String method) {
+        methodSet.remove(method);
+    }
 
     private static class MyCustomFormatter extends Formatter {
         @Override
@@ -44,15 +50,22 @@ public class Agent {
                     typeDescription.getDeclaredMethods()
                             .forEach(method -> {
                                 if(method.isMethod()) {
-                                    LOGGER.info(typeDescription.getCanonicalName() + " - " + method.getName());
+                                    methodSet.put(method.toString(), "");
                                 }
                             });
-                    LOGGER.info("--------------------------------");
                     return builder
                             .method(ElementMatchers.any())
                             .intercept(Advice.to(AllMethod.class));}
                 )
                 .installOn(instrumentation);
 
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("Running Shutdown Hook. Unload report");
+                methodSet.keySet()
+                        .stream()
+                        .sorted()
+                        .forEach(LOGGER::info);
+        }));
     }
 }
+
