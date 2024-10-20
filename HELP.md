@@ -1,28 +1,22 @@
 # Getting Started
 
--javaagent:/home/shuttle/IdeaProjects/coverageAgent/target/get-methods-1.0-SNAPSHOT.jar=/tmp/coverage.log;com.example
+Java agent, for checking test coverage, when tests run on TS
 
+When agent is run, 
+  on start appeared message - "Agent is running"
+  at the end appeared message - "Running Shutdown Hook. Unload report"
+
+### Run Command
+
+-javaagent:/home/shuttle/IdeaProjects/coverageAgent/target/get-methods-1.0-SNAPSHOT.jar=/report.log;com.package.details
+
+/report.log;com.package - agent arguments, separated by ;, where:
+               /report.log - path of report
+       com.package.details - path of scanned and filtered classes
 
 ### Reference Documentation
 For further reference, please consider the following sections:
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.3.4/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.3.4/maven-plugin/build-image.html)
-* [Ollama](https://docs.spring.io/spring-ai/reference/api/clients/ollama-chat.html)
-* [Spring Web](https://docs.spring.io/spring-boot/docs/3.3.4/reference/htmlsingle/index.html#web)
-
-### Guides
-The following guides illustrate how to use some features concretely:
-
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
-
-### Maven Parent overrides
-
-Due to Maven's design, elements are inherited from the parent POM to the project POM.
-While most of the inheritance is fine, it also inherits unwanted elements like `<license>` and `<developers>` from the parent.
-To prevent this, the project POM contains empty overrides for these elements.
-If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
-
+* [The java Command](https://docs.oracle.com/en/java/javase/22/docs/specs/man/java.html)
+* [Package java.lang.instrument](https://docs.oracle.com/javase/10/docs/api/java/lang/instrument/package-summary.html)
+* [Byte Buddy](https://bytebuddy.net/)

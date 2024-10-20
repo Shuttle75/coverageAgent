@@ -9,6 +9,7 @@ import java.util.logging.*;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
+import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.matcher.ElementMatchers;
 
 public class Agent {
@@ -27,40 +28,32 @@ public class Agent {
         }
     }
 
-    private static void initLog(String filePath){
-        try {
-            FileHandler fileHandler = new FileHandler(filePath);
-            fileHandler.setFormatter(new MyCustomFormatter());
+    private static void initLogger(String filePath) throws IOException {
+        FileHandler fileHandler = new FileHandler(filePath);
+        fileHandler.setFormatter(new MyCustomFormatter());
 
-            LOGGER.addHandler(fileHandler);
-            LOGGER.setUseParentHandlers(false);
-        } catch (IOException e) {
-            System.out.println(e);
-        }
+        LOGGER.addHandler(fileHandler);
+        LOGGER.setUseParentHandlers(false);
     }
 
-    public static void premain(String arguments, Instrumentation instrumentation) {
+    public static void premain(String arguments, Instrumentation instrumentation) throws IOException {
         System.out.println("Agent is running");
 
-        System.out.println(arguments);
-
         String[] argsArray = arguments.split(";");
-        initLog(argsArray[0]);
+        initLogger(argsArray[0]);
 
         new AgentBuilder.Default()
                 .with(new AgentBuilder.InitializationStrategy.SelfInjection.Eager())
                 .type(ElementMatchers.nameStartsWith(argsArray[1]))
                 .transform((builder, typeDescription, classLoader, javaModule, protectionDomain) -> {
-                    typeDescription.getDeclaredMethods()
-                            .forEach(method -> {
-                                if(method.isMethod()) {
-                                    methodSet.put(method.toString(), "");
-                                }
-                            });
+                    typeDescription
+                        .getDeclaredMethods()
+                        .filter(MethodDescription::isMethod)
+                        .forEach(method -> methodSet.put(method.toString(), ""));
                     return builder
                             .method(ElementMatchers.any())
-                            .intercept(Advice.to(AllMethod.class));}
-                )
+                            .intercept(Advice.to(AllMethod.class));
+                })
                 .installOn(instrumentation);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
